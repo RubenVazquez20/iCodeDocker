@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+
+  mindscript:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports: 
+      - "5173:5173"
+    depends_on:
+      - codeexec
+      - batman
+      - riddle
+      - database
+
+  database:
+    image: mysql:latest
+    ports: 
+      - "3307:3306"
+    restart: always
+    environment:
+      MYSQL_DATABASE: iCode
+      MYSQL_ROOT_PASSWORD: 
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    command: --skip-host-cache --pid-file=/var/run/mysqld/mysqld.pid
+    volumes:
+      - data:/var/lib/mysql
+      - ./src/server/seeds/tables.sql:/docker-entrypoint-initdb.d/tables.sql
+      - ./src/server/seeds/functions.sql:/docker-entrypoint-initdb.d/functions.sql
+      - ./src/server/seeds/seeds.sql:/docker-entrypoint-initdb.d/seeds.sql
+
+  codeexec:
+    build:
+      context: .
+      dockerfile: Dockerfile-codeExec
+    env_file: 
+      - ./src/server/codeExec/.env
+    ports:
+      - "8001:8001"
+    depends_on:
+      - database
+
+  batman:
+    build:
+      context: .
+      dockerfile: Dockerfile-batman
+    env_file: 
+      - ./src/server/BATMAN/.env
+    ports:
+      - "8002:8002"
+    depends_on:
+      - database
+
+  riddle:
+    build:
+      context: .
+      dockerfile: Dockerfile-riddle
+    env_file: 
+      - ./src/server/RIDDLE/.env
+    ports:
+      - "8003:8003"
+    depends_on:
+      - database
+
+volumes:
+  data:

@@ -1,0 +1,25 @@
+FROM golang:latest
+
+RUN mkdir /triadaPerfecta2
+
+# Define the workspace
+WORKDIR /triadaPerfecta2
+
+# Create more directories
+RUN mkdir -p /triadaPerfecta2/batman
+
+COPY ./src/server/BATMAN/go.mod ./src/server/BATMAN/go.sum ./src/server/BATMAN/.env ./batman/
+
+WORKDIR /triadaPerfecta2/batman
+
+# Download and verify the module dependencies
+RUN go mod download && go mod verify
+
+# Copy the directories into the containers
+COPY ./src/server/BATMAN .
+
+RUN go build -v -o batmanAPP ./main.go
+
+WORKDIR /triadaPerfecta2
+
+CMD ["./batman/batmanAPP"]

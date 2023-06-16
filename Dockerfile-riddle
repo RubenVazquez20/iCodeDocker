@@ -1,0 +1,28 @@
+#=====================================================
+FROM golang:latest
+# Create the principal directory
+RUN mkdir /triadaPerfecta3
+
+# Define the workspace
+WORKDIR /triadaPerfecta3
+
+# Create more directories
+RUN mkdir -p /triadaPerfecta3/riddle
+
+# Copy the directories into the containers
+COPY ./src/server/RIDDLE/go.mod ./src/server/RIDDLE/go.sum  ./src/server/RIDDLE/.env ./riddle/
+
+WORKDIR /triadaPerfecta3/riddle
+
+# Download and verify the module dependencies
+RUN go mod download && go mod verify
+
+# Copy the directories into the containers
+COPY ./src/server/RIDDLE .
+
+RUN go build -v -o riddleAPP ./main.go
+
+# Set the working directory back to the project root
+WORKDIR /triadaPerfecta3
+
+CMD ["./riddle/riddleAPP"]

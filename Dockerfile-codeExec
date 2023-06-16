@@ -1,0 +1,30 @@
+FROM golang:latest
+
+# Create the principal directory
+RUN mkdir /triadaPerfecta
+
+# Define the workspace
+WORKDIR /triadaPerfecta
+
+# Create more directories
+RUN mkdir -p /triadaPerfecta/codeExec
+
+# Copy the directories into the containers
+COPY ./src/server/codeExec/go.mod ./src/server/codeExec/go.sum ./src/server/codeExec/.env ./codeExec/
+
+# Set the working directory to codeExec
+WORKDIR /triadaPerfecta/codeExec
+
+# Download and verify the module dependencies
+RUN go mod download && go mod verify
+
+# Copy the rest of the code into the container
+COPY ./src/server/codeExec .
+
+# Build the application
+RUN go build -v -o codeExecApp ./main.go
+
+# Set the working directory back to the project root
+WORKDIR /triadaPerfecta
+
+CMD ["./codeExec/codeExecApp"]
